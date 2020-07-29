@@ -47,6 +47,7 @@ class RelativeRanking:
         r = self.request(self.USER_URL, param)
         data = r.json()
         data = json.dumps(data)
+        data = json.loads(data)
         return data[0]['username']
 
     def get_match_info(self, match_id):
