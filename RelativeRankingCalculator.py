@@ -1,4 +1,4 @@
-import os, requests, json, time
+import os, requests, json, time, discord
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -13,8 +13,10 @@ class RelativeRanking:
     player_index = {}
     map_scores = {}
     sorted_map_scores = {}
+    modIdx = {}
 
-    def __init__(self):
+    def __init__(self, message):
+        self.message = message
         print("Initialized")
 
     def request(self, url, args):
@@ -66,10 +68,20 @@ class RelativeRanking:
         data = json.loads(data)
         return data
 
+    def get_beatmap_info(self, map_id):
+        map_id = str(map_id).strip()
+        param = {'k': apiKey, 'b': map_id}
+        r = self.request(self.MULTI_URL, param)
+        data = r.json()
+        data = json.dumps(data)
+        data = json.loads(data)
+        return data
+
     def organize_match_info(self, multi_link):
         """
+        Finds out the sorted map scores in self.sorted_map_scores
         :param multi_link: link to the lobby
-        :return: absolutely nothing yet
+        :return: nothing
         """
         match_id = str(multi_link).strip().split("/")[-1]
         print("Processing", match_id, "...")
@@ -110,6 +122,11 @@ class RelativeRanking:
             for x in scores:
                 self.sorted_map_scores[map_score][map_idx[x]] = x
 
+    def parse_map_mods(self):
+        f = open("mapMod", "r")
+        pool_count = f.readline().strip().split()
+        print(pool_count)
+
     def get_scores(self):
         return self.sorted_map_scores
 
@@ -117,3 +134,40 @@ class RelativeRanking:
         self.sorted_map_scores.clear()
         self.map_scores.clear()
         self.player_index.clear()
+        self.modIdx.clear()
+
+    async def run(self):
+        message = self.message.content.strip().split()
+
+        nomod_count = int(message[1])
+        hidden_count = int(message[2])
+        hard_rock_count = int(message[3])
+        double_time_count = int(message[4])
+        free_mod_count = int(message[5])
+        tiebreaker_count = int(message[6])
+
+        map_count = nomod_count + hidden_count + hard_rock_count + double_time_count + free_mod_count + tiebreaker_count
+
+        for i in range(nomod_count):
+            self.modIdx["NM" + str(i+1)] = message[i+7]
+        for i in range(hidden_count):
+            self.modIdx["HD" + str(i+1)] = message[i+7+nomod_count]
+        for i in range(hard_rock_count):
+            self.modIdx["HR" + str(i + 1)] = message[i + 7 + nomod_count + hidden_count]
+        for i in range(double_time_count):
+            self.modIdx["DT" + str(i + 1)] = message[i + 7 + nomod_count + hidden_count + hard_rock_count]
+        for i in range(free_mod_count):
+            self.modIdx["FM" + str(i + 1)] = message[i + 7 + nomod_count + hidden_count + hard_rock_count +
+                                                  double_time_count]
+        for i in range(tiebreaker_count):
+            self.modIdx["TB" + str(i + 1)] = message[i + 7 + nomod_count + hidden_count + hard_rock_count +
+                                                  double_time_count + free_mod_count]
+
+        print(self.modIdx)
+
+        for i in range(map_count+7, len(message)):
+            match_id = message[i]
+            await self.message.channel.send("Processing {}...".format(match_id))
+            self.organize_match_info(match_id)
+        print(json.dumps(self.get_scores(), indent=4))
+        self.clear_all()
