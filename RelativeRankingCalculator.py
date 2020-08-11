@@ -11,9 +11,11 @@ class RelativeRanking:
     MULTI_URL = "https://osu.ppy.sh/api/get_match"
     REQUEST_DELAY = 0.7
     player_index = {}
+    map_scores = {}
+    sorted_map_scores = {}
 
-    def __init__(self, links):
-        self.links = links
+    def __init__(self):
+        print("Initialized")
 
     def request(self, url, args):
         """
@@ -64,21 +66,54 @@ class RelativeRanking:
         data = json.loads(data)
         return data
 
-    def match_relative_ranking(self, multi_link):
+    def organize_match_info(self, multi_link):
         """
         :param multi_link: link to the lobby
         :return: absolutely nothing yet
         """
         match_id = str(multi_link).strip().split("/")[-1]
+        print("Processing", match_id, "...")
 
         match_info = self.get_match_info(match_id)
 
-        # let us index the player id's first
         for game in match_info['games']:
+            beatmap_id = game['beatmap_id']
+            if beatmap_id not in self.map_scores:
+                self.map_scores[beatmap_id] = {}
+
             for score in game['scores']:
+                # skip this user if his score is sub 150 (probably a referee)
+                if int(score['score']) < 150:
+                    continue
+
+                # index player id's
                 user_id = str(score['user_id'])
                 if user_id not in self.player_index:
                     self.player_index[user_id] = self.id_to_username(user_id)
 
-    def get_player_index(self):
-        return "Participants: " + str(self.player_index)
+                user = self.player_index[user_id]
+                if user_id not in self.map_scores[beatmap_id]:
+                    self.map_scores[beatmap_id][user] = int(score['score'])
+                else:
+                    self.map_scores[beatmap_id][user] = max(self.map_scores[beatmap_id][user], int(score['score']))
+
+        for map_score in self.map_scores:
+            map_idx = {}
+            scores = []
+            for user, score in self.map_scores[map_score].items():
+                scores.append(score)
+                map_idx[score] = user
+
+            scores = sorted(scores, reverse=True)
+
+            self.sorted_map_scores[map_score] = {}
+            for x in scores:
+                self.sorted_map_scores[map_score][map_idx[x]] = x
+
+    def get_scores(self):
+        return self.sorted_map_scores
+
+    def clear_all(self):
+        self.sorted_map_scores.clear()
+        self.map_scores.clear()
+        self.player_index.clear()
