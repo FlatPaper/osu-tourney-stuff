@@ -163,7 +163,7 @@ class RelativeRanking:
         self.result.clear()
 
     async def run(self):
-        self.organize_match_info()
+        self.organize_map_info()
         message = self.message.content.strip().split()
         for i in range(self.map_count+7, len(message)):
             match_id = message[i]
