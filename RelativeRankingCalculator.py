@@ -16,6 +16,7 @@ class RelativeRanking:
     sorted_map_scores = {}
     modIdx = {}
     result = {}
+    map_count = 0
 
     def __init__(self, message):
         self.message = message
@@ -124,17 +125,7 @@ class RelativeRanking:
             for x in scores:
                 self.sorted_map_scores[map_score][map_idx[x]] = x
 
-    def get_scores(self):
-        return self.sorted_map_scores
-
-    def clear_all(self):
-        self.sorted_map_scores.clear()
-        self.map_scores.clear()
-        self.player_index.clear()
-        self.modIdx.clear()
-        self.result.clear()
-
-    async def run(self):
+    def organize_map_info(self):
         message = self.message.content.strip().split()
 
         nomod_count = int(message[1])
@@ -144,7 +135,7 @@ class RelativeRanking:
         free_mod_count = int(message[5])
         tiebreaker_count = int(message[6])
 
-        map_count = nomod_count + hidden_count + hard_rock_count + double_time_count + free_mod_count + tiebreaker_count
+        self.map_count = nomod_count + hidden_count + hard_rock_count + double_time_count + free_mod_count + tiebreaker_count
 
         for i in range(nomod_count):
             self.modIdx["NM" + str(i+1)] = message[i+7]
@@ -161,14 +152,23 @@ class RelativeRanking:
             self.modIdx["TB" + str(i + 1)] = message[i + 7 + nomod_count + hidden_count + hard_rock_count +
                                                   double_time_count + free_mod_count]
 
-        print(self.modIdx)
+    def get_scores(self):
+        return self.sorted_map_scores
 
-        for i in range(map_count+7, len(message)):
+    def clear_all(self):
+        self.sorted_map_scores.clear()
+        self.map_scores.clear()
+        self.player_index.clear()
+        self.modIdx.clear()
+        self.result.clear()
+
+    async def run(self):
+        self.organize_match_info()
+        message = self.message.content.strip().split()
+        for i in range(self.map_count+7, len(message)):
             match_id = message[i]
             await self.message.channel.send("Processing {}...".format(match_id))
             self.organize_match_info(match_id)
-
-        print(json.dumps(self.sorted_map_scores, indent=4))
 
         for mod, map_id in self.modIdx.items():
             map_info = self.get_beatmap_info(map_id)
