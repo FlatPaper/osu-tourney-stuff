@@ -30,6 +30,13 @@ async def on_message(message):
     if str(message.content) == "!namderanker":
         await message.channel.send("https://cdn.discordapp.com/attachments/724332647505199216/742762469654790194/image0.png")
 
+    if str(message.content) == "!mei HD1":
+        await message.channel.send("Imagine getting 7x misses on HD1 Yorushika.")
+        await message.channel.send("https://cdn.discordapp.com/attachments/708699255371464787/742891780923457586/speed.PNG")
+
+    if str(message.content) == "!marvin":
+        await message.channel.send("https://cdn.discordapp.com/attachments/729064000691896342/738816561346904184/unknown.png")
+
     if message.author.id != 258630920024621069:
         return
 
