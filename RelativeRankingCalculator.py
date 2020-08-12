@@ -9,11 +9,13 @@ apiKey = str(os.getenv("OSU_API_KEY"))
 class RelativeRanking:
     USER_URL = "https://osu.ppy.sh/api/get_user"
     MULTI_URL = "https://osu.ppy.sh/api/get_match"
+    MAP_URL = "https://osu.ppy.sh/api/get_beatmaps"
     REQUEST_DELAY = 0.7
     player_index = {}
     map_scores = {}
     sorted_map_scores = {}
     modIdx = {}
+    result = {}
 
     def __init__(self, message):
         self.message = message
@@ -71,11 +73,11 @@ class RelativeRanking:
     def get_beatmap_info(self, map_id):
         map_id = str(map_id).strip()
         param = {'k': apiKey, 'b': map_id}
-        r = self.request(self.MULTI_URL, param)
+        r = self.request(self.MAP_URL, param)
         data = r.json()
         data = json.dumps(data)
         data = json.loads(data)
-        return data
+        return data[0]
 
     def organize_match_info(self, multi_link):
         """
@@ -122,11 +124,6 @@ class RelativeRanking:
             for x in scores:
                 self.sorted_map_scores[map_score][map_idx[x]] = x
 
-    def parse_map_mods(self):
-        f = open("mapMod", "r")
-        pool_count = f.readline().strip().split()
-        print(pool_count)
-
     def get_scores(self):
         return self.sorted_map_scores
 
@@ -135,6 +132,7 @@ class RelativeRanking:
         self.map_scores.clear()
         self.player_index.clear()
         self.modIdx.clear()
+        self.result.clear()
 
     async def run(self):
         message = self.message.content.strip().split()
@@ -169,5 +167,17 @@ class RelativeRanking:
             match_id = message[i]
             await self.message.channel.send("Processing {}...".format(match_id))
             self.organize_match_info(match_id)
-        print(json.dumps(self.get_scores(), indent=4))
+
+        print(json.dumps(self.sorted_map_scores, indent=4))
+
+        for mod, map_id in self.modIdx.items():
+            map_info = self.get_beatmap_info(map_id)
+            name = str(mod) + ": " + map_info["artist"] +  " - " + map_info["title"] + " [" + map_info["version"] + "]"
+            if str(map_id) not in self.sorted_map_scores:
+                self.result[name] = "Map was not played."
+            else:
+                self.result[name] = self.sorted_map_scores[str(map_id)]
+
+        print(json.dumps(self.result, indent=4))
+
         self.clear_all()
