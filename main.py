@@ -39,8 +39,7 @@ async def on_message(message):
 
     if message.author.id != 258630920024621069:
         return
-
-    if str(message.content).startswith("!calc"):
+    elif str(message.content).startswith("!calc"):
         calculator = RelativeRanking(message)
         await calculator.run()
 
