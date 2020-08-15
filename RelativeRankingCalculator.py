@@ -1,4 +1,4 @@
-import os, requests, json, time, discord
+import os, requests, json, time, csv
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -16,7 +16,10 @@ class RelativeRanking:
     sorted_map_scores = {}
     modIdx = {}
     result = {}
+    csv_headers = []
+    player_count = []
     map_count = 0
+    player_list = []
 
     def __init__(self, message):
         self.message = message
@@ -106,7 +109,11 @@ class RelativeRanking:
                 if user_id not in self.player_index:
                     self.player_index[user_id] = self.id_to_username(user_id)
 
+                # skip this user if we don't want to track him, if we are tracking people
                 user = self.player_index[user_id]
+                if user not in self.player_list and len(self.player_list) != 0:
+                    continue
+
                 if user_id not in self.map_scores[beatmap_id]:
                     self.map_scores[beatmap_id][user] = int(score['score'])
                 else:
@@ -152,6 +159,12 @@ class RelativeRanking:
             self.modIdx["TB" + str(i + 1)] = message[i + 7 + nomod_count + hidden_count + hard_rock_count +
                                                   double_time_count + free_mod_count]
 
+    def track_user(self):
+        with open('track_users.txt', 'r') as f:
+            for line in f:
+                self.player_list.append(line.strip())
+        print(self.player_list)
+
     def get_scores(self):
         return self.sorted_map_scores
 
@@ -161,23 +174,49 @@ class RelativeRanking:
         self.player_index.clear()
         self.modIdx.clear()
         self.result.clear()
+        self.player_list.clear()
+
+    def extract_to_csv(self):
+        with open('maps.csv', 'w') as f:
+            writer = csv.writer(f)
+
+            writer.writerow(cnt for cnt in self.player_count)
+
+            for map_name in self.result:
+                f.write('"{}"'.format(map_name) + "\n")
+                if self.result[map_name] == "Map was not played.":
+                    writer.writerow(" ")
+                else:
+                    for row in self.result[map_name].items():
+                        writer.writerow(row)
+                    writer.writerow(" ")
 
     async def run(self):
         self.organize_map_info()
+        self.track_user()
         message = self.message.content.strip().split()
         for i in range(self.map_count+7, len(message)):
             match_id = message[i]
             await self.message.channel.send("Processing {}...".format(match_id))
             self.organize_match_info(match_id)
 
+        print(self.sorted_map_scores)
+
         for mod, map_id in self.modIdx.items():
             map_info = self.get_beatmap_info(map_id)
             name = str(mod) + ": " + map_info["artist"] +  " - " + map_info["title"] + " [" + map_info["version"] + "]"
+            self.csv_headers.append("Player")
+            self.csv_headers.append(name)
             if str(map_id) not in self.sorted_map_scores:
+                self.player_count.append(0)
                 self.result[name] = "Map was not played."
             else:
                 self.result[name] = self.sorted_map_scores[str(map_id)]
+                self.player_count.append(len(self.result[name]))
 
-        print(json.dumps(self.result, indent=4))
+        self.extract_to_csv()
+
+        print("Completed!")
+        await self.message.channel.send("Completed!")
 
         self.clear_all()
