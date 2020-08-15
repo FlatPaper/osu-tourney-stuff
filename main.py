@@ -44,5 +44,11 @@ async def on_message(message):
         calculator = RelativeRanking(message)
         await calculator.run()
 
+    elif str(message.content).startswith("!track"):
+        with open ('track_users.txt', 'w') as f:
+            message = str(message.content)[len("!track"):]
+            message = message.strip().split(",")
+            for i in range(len(message)):
+                f.write(message[i] + "\n")
 
 client.run(TOKEN)
