@@ -37,6 +37,9 @@ async def on_message(message):
     if str(message.content) == "!marvin":
         await message.channel.send("https://cdn.discordapp.com/attachments/729064000691896342/738816561346904184/unknown.png")
 
+    if str(message.content) == "!nekopaper":
+        await message.channel.send("https://cdn.discordapp.com/attachments/708699255132651608/742961583642378310/unknown.png")
+
     if message.author.id != 258630920024621069:
         return
     elif str(message.content).startswith("!calc"):
