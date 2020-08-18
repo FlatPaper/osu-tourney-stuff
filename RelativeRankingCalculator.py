@@ -16,7 +16,6 @@ class RelativeRanking:
     sorted_map_scores = {}
     modIdx = {}
     result = {}
-    csv_headers = []
     player_count = []
     map_count = 0
     player_list = []
@@ -205,8 +204,6 @@ class RelativeRanking:
         for mod, map_id in self.modIdx.items():
             map_info = self.get_beatmap_info(map_id)
             name = str(mod) + ": " + map_info["artist"] +  " - " + map_info["title"] + " [" + map_info["version"] + "]"
-            self.csv_headers.append("Player")
-            self.csv_headers.append(name)
             if str(map_id) not in self.sorted_map_scores:
                 self.player_count.append(0)
                 self.result[name] = "Map was not played."
