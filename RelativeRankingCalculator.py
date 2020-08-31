@@ -120,6 +120,7 @@ class RelativeRanking:
 
     def extract_to_csv(self):
         with open('maps.csv', 'w') as f:
+            f.truncate()
             writer = csv.writer(f)
 
             writer.writerow(cnt for cnt in self.player_count)
@@ -132,6 +133,7 @@ class RelativeRanking:
                     for row in self.result[map_name].items():
                         writer.writerow(row)
                     writer.writerow(" ")
+            f.close()
 
     async def run(self):
         self.organize_map_info()
