@@ -130,8 +130,13 @@ class RelativeRanking:
                 if self.result[map_name] == "Map was not played.":
                     writer.writerow(" ")
                 else:
+                    max_value = 0
                     for row in self.result[map_name].items():
-                        writer.writerow(row)
+                        max_value = max(max_value, row[1])
+                        info = list(row)
+                        info.append(int(float(info[1]))/int(float(max_value)))
+                        info = tuple(info)
+                        writer.writerow(info)
                     writer.writerow(" ")
             f.close()
 
