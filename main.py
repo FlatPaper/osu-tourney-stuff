@@ -40,10 +40,13 @@ async def on_message(message):
     if str(message.content) == "!nekopaper":
         await message.channel.send("https://cdn.discordapp.com/attachments/708699255132651608/742961583642378310/unknown.png")
 
+    if str(message.content) == "!evan":
+        await message.channel.send("https://cdn.discordapp.com/attachments/708699255132651608/744320720569630838/unknown.png")
+
     if message.author.id != 258630920024621069:
         return
     elif str(message.content).startswith("!calc"):
-        calculator = RelativeRanking(message)
+        calculator = IndividualRelativeRanking(message)
         await calculator.run()
 
     elif str(message.content).startswith("!track"):

@@ -1,7 +1,8 @@
-import json, csv
+import csv
 from Osu import Osu
 
-class RelativeRanking:
+
+class IndividualRelativeRanking:
     player_index = {}
     map_scores = {}
     sorted_map_scores = {}
@@ -32,7 +33,7 @@ class RelativeRanking:
         :return: nothing
         """
         match_id = str(multi_link).strip().split("/")[-1]
-        print("Processing", match_id, "...")
+        print("Processing {}...".format(match_id))
 
         match_info = Osu.get_match_info(match_id)
 
@@ -49,7 +50,7 @@ class RelativeRanking:
                 # index player id's
                 user_id = str(score['user_id'])
                 if user_id not in self.player_index:
-                    self.player_index[user_id] = RelativeRanking.id_to_username(user_id)
+                    self.player_index[user_id] = IndividualRelativeRanking.id_to_username(user_id)
 
                 # skip this user if we don't want to track him, if we are tracking people
                 user = self.player_index[user_id]
@@ -105,7 +106,6 @@ class RelativeRanking:
         with open('track_users.txt', 'r') as f:
             for line in f:
                 self.player_list.append(line.strip())
-        print(self.player_list)
 
     def get_scores(self):
         return self.sorted_map_scores
@@ -146,12 +146,12 @@ class RelativeRanking:
         message = self.message.content.strip().split()
         for i in range(self.map_count+7, len(message)):
             match_id = message[i]
-            await self.message.channel.send("Processing {}...".format(match_id))
+            await self.message.channel.send("Processing {}...".format(match_id.strip().split("/")[-1]))
             self.organize_match_info(match_id)
 
         for mod, map_id in self.modIdx.items():
             map_info = Osu.get_beatmap_info(map_id)
-            name = str(mod) + ": " + map_info["artist"] +  " - " + map_info["title"] + " [" + map_info["version"] + "]"
+            name = str(mod) + ": " + map_info["artist"] + " - " + map_info["title"] + " [" + map_info["version"] + "]"
             if str(map_id) not in self.sorted_map_scores:
                 self.player_count.append(0)
                 self.result[name] = "Map was not played."
