@@ -1,5 +1,7 @@
 import csv
 from Osu import Osu
+from LeaderboardCalculator import ModLeaderboardCalculator
+import json
 
 
 class IndividualRelativeRanking:
@@ -137,6 +139,7 @@ class IndividualRelativeRanking:
                         info.append(int(float(info[1]))/int(float(max_value)))
                         info = tuple(info)
                         writer.writerow(info)
+                        self.result[map_name][row[0]] = info[2]
                     writer.writerow(" ")
             f.close()
 
@@ -163,5 +166,10 @@ class IndividualRelativeRanking:
 
         print("Completed!")
         await self.message.channel.send("Completed!")
+
+        print(json.dumps(self.result, indent=4))
+        o = ModLeaderboardCalculator(self.result)
+        o.calc_mod_lb()
+        o.extract_to_csv()
 
         self.clear_all()
