@@ -19,7 +19,7 @@ class Osu:
 
     @staticmethod
     def get_user_info(username="", user_id=0):
-        if len(username)==0 and user_id==0:
+        if len(username) == 0 and user_id == 0:
             return "Error"
         if user_id == 0:
             username = str(username).strip()
