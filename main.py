@@ -1,9 +1,10 @@
 import os
 
 import discord, json
-from RelativeRankingCalculator import RelativeRanking
+import json
 from dotenv import load_dotenv
 
+from IndividualRelativeRankingCalculator import IndividualRelativeRanking
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
