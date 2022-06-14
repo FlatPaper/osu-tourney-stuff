@@ -3,7 +3,7 @@ import os
 
 from Osu import Osu
 
-
+# Code calculates qualifier results for hkttycup2 (finds best OVERALL team score, not best individual performance)
 class Teams:
     username_to_team = {}
     id_to_username = {}
@@ -92,6 +92,8 @@ class LobbyParser:
                 username = teams.id_to_username[user_id]
                 team = teams.username_to_team[username]
 
+                print(f'{user_id} {user_score} {username} {team}')
+
                 if team not in team_temp_scores:
                     team_temp_scores[team] = user_score
                 else:
@@ -139,6 +141,7 @@ with open('lobbies.txt', 'r') as f:
             for team in team_order:
                 team = team.strip()
                 if team not in scores["NM1"]:
+                    print(team)
                     output.write('\n')
                     continue
                 nm1_score = scores["NM1"][team]
